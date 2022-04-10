@@ -1,14 +1,15 @@
 # Friedjof Noweck
 # 2021-12-08 Mi
-from typing import Tuple
+import random
+import time
+from threading import Thread
 from tkinter import *
+from typing import Tuple
+
 import numpy as np
 
 from modules.arm import Segment, Arm, Pentagon
-from modules.vectors import Vector
-
-from threading import Thread
-import time
+from modules.vectors import Vector2D, Line, Angle2D
 
 
 class Simulator:
@@ -18,7 +19,7 @@ class Simulator:
         self.origin: Tuple[int, int] = self.configs["origin"]
         self.ui = ui
 
-        self.cached_pentagon: Pentagon = self.angles(135.0, 135.0)
+        self.current_pentagon: Pentagon = self.angles(135.0, 135.0)
 
         if self.ui:
             self.items: dict = {}
@@ -60,19 +61,15 @@ class Simulator:
 
     def _update_position(self, event):
         p: Pentagon = self.position(
-            Vector(*self._relative_coord(event.x, event.y))
+            Vector2D(*self._relative_coord(event.x, event.y))
         )
 
-        if not self.pentagon_is_invalid(p):
-            self.update(p)
+        self.display(pentagon=p)
 
     def _update_degree(self, event):
-        p: Pentagon = self.angles(
-            self.de_angle.get(), self.ga_angle.get()
-        )
+        p: Pentagon = self.angles(self.de_angle.get(), self.ga_angle.get())
 
-        if not self.pentagon_is_invalid(p):
-            self.update(p)
+        self.display(pentagon=p)
 
     def __grid(self, color: str = "#555", line_width: int = 1, fineness: int = 15) -> None:
         for i in range(0, self.configs['geometry']['height'], fineness):
@@ -104,7 +101,7 @@ class Simulator:
                         factor: float = 2.25, dif: float = 0.0) -> Tuple[int, int]:
         if not origin:
             origin = self.origin
-        return int((x - origin[0]) / factor - dif), int((y - origin[1]) / factor - dif)
+        return int((x - origin[0]) / factor - dif), int((y - origin[1]) * (-1) / factor - dif)
 
     def __sin(self, deg: int or float) -> int or float:
         return np.sin(np.deg2rad(deg))
@@ -119,15 +116,15 @@ class Simulator:
         return self.__arccos((a**2 + b**2 - c**2) / (2 * a * b))
 
     def position(self, ox) -> Pentagon:
-        ox: Vector = Vector(ox.x, -ox.y)
+        ox: Vector2D = Vector2D(ox.x, -ox.y)
 
-        oz: Vector = Vector(*self.arms[0].axis_pos)
-        ov: Vector = Vector(*self.arms[1].axis_pos)
+        oz: Vector2D = Vector2D(*self.arms[0].axis_pos)
+        ov: Vector2D = Vector2D(*self.arms[1].axis_pos)
 
-        vx: Vector = ox - ov
-        xz: Vector = oz - ox
+        vx: Vector2D = ox - ov
+        xz: Vector2D = oz - ox
 
-        xv: Vector = ov - ox
+        xv: Vector2D = ov - ox
 
         de: float = float(ov // xv + self.__cos_angle(
             xv.length(), self.arms[1].segments[0].length, self.arms[1].segments[1].length
@@ -137,9 +134,9 @@ class Simulator:
             self.arms[1].segments[0].length, self.arms[1].segments[1].length, vx.length()
         ))
 
-        ga: float = oz // xz + self.__cos_angle(
+        ga: float = 180 - (oz // xz + self.__cos_angle(
             xz.length(), self.arms[0].segments[0].length, self.arms[0].segments[1].length
-        )
+        ))
 
         be: float = float(self.__cos_angle(
             self.arms[0].segments[0].length, self.arms[0].segments[1].length, xz.length()
@@ -151,22 +148,16 @@ class Simulator:
             vx.length(), self.arms[1].segments[1].length, self.arms[1].segments[0].length
         ) + ox // vx)
 
-        oy: Vector = Vector(
+        oy: Vector2D = Vector2D(
             self.arms[0].segments[0].length * self.__sin(ga),
             self.arms[0].segments[0].length * self.__cos(ga) + oz.y
         )
-        ow: Vector = Vector(
+        ow: Vector2D = Vector2D(
             self.arms[1].segments[0].length * self.__sin(de),
             self.arms[1].segments[0].length * self.__cos(de) + ov.y
         )
 
-        oa: Vector = Vector(0, 0)
-
-        try:
-            self.de_angle.set(int(de))
-            self.ga_angle.set(int(ga))
-        except ValueError:
-            pass
+        oa: Vector2D = Vector2D(0, 0)
 
         be_1: float = (oy - ox) // (oy - ow)
         ep_1: float = (ow - ox) // (ow - oy)
@@ -180,19 +171,19 @@ class Simulator:
     def angles(self, de: int or float, ga: int or float) -> Pentagon:
         ga: float = 180 - ga
 
-        oz: Vector = Vector(*self.arms[0].axis_pos)
-        ov: Vector = Vector(*self.arms[1].axis_pos)
+        oz: Vector2D = Vector2D(*self.arms[0].axis_pos)
+        ov: Vector2D = Vector2D(*self.arms[1].axis_pos)
 
-        oy: Vector = Vector(
+        oy: Vector2D = Vector2D(
             self.arms[0].segments[0].length * self.__sin(ga),
             self.arms[0].segments[0].length * self.__cos(ga)
         ) + oz
-        ow: Vector = Vector(
+        ow: Vector2D = Vector2D(
             self.arms[1].segments[0].length * self.__sin(de),
             self.arms[1].segments[0].length * self.__cos(de)
         ) + ov
 
-        wy: Vector = oy - ow
+        wy: Vector2D = oy - ow
 
         ep_1: float = self.__cos_angle(self.arms[1].segments[1].length, wy.length(), self.arms[0].segments[1].length)
 
@@ -200,15 +191,15 @@ class Simulator:
             self.arms[1].segments[1].length**2 - (self.arms[0].segments[1].length * self.__sin(ep_1))**2
         )
 
-        oa: Vector = ow + wy * (a_length/wy.length())
-        ay: Vector = oy - oa
+        oa: Vector2D = ow + wy * (a_length / wy.length())
+        ay: Vector2D = oy - oa
 
-        ob: Vector = Vector(ay.y, ay.x * -1) + oa
-        ab: Vector = ob - oa
+        ob: Vector2D = Vector2D(ay.y, ay.x * -1) + oa
+        ab: Vector2D = ob - oa
 
-        ox: Vector = oa + (ob - oa) * ((self.arms[0].segments[1].length * self.__sin(ep_1)) / ab.length())
+        ox: Vector2D = oa + (ob - oa) * ((self.arms[0].segments[1].length * self.__sin(ep_1)) / ab.length())
 
-        wx: Vector = ox - ow
+        wx: Vector2D = ox - ow
 
         be: float = (oz - oy) // (ox - oy)
         be_1: float = (oy - ox) // wy
@@ -223,27 +214,12 @@ class Simulator:
             ep, ep_1, ep - ep_1
         )
 
-    def display_pentagon(self, pentagon: Pentagon):
-        if not self.pentagon_is_invalid(pentagon):
-            self.update(pentagon)
-
-            self.ga_angle.set(pentagon.ga)
-            self.de_angle.set(pentagon.de)
-
-    def pentagon_is_invalid(self, p: Pentagon) -> bool:
-        p.ga = 180 - p.ga
-        angles: tuple = (p.al, p.be, p.ga, p.de, p.ep)
-
-        con1: bool = p.al > 180 or p.be > 180 or p.ep > 180 or sum(angles) != 540
-        con2: bool = np.isnan(p.ox.x) or np.isnan(p.ox.y)
-        con3: bool = p.ep < p.ep_1 or p.be < p.be_1
-
-        return con1 or con2 or con3
-
     def update(self, p: Pentagon):
-
-        # Origin:
-        self.canvas.create_oval(*self._absolut_coord(x=0, y=0, dif=-5), *self._absolut_coord(x=0, y=0, dif=5), fill="red")
+        if "origin" not in self.items.keys():
+            self.items["origin"] = self.canvas.create_oval(
+                *self._absolut_coord(x=0, y=0, dif=-5),
+                *self._absolut_coord(x=0, y=0, dif=5), fill="red"
+            )
 
         if "yz" not in self.items.keys():
             self.items["yz"] = self.canvas.create_line(
@@ -277,52 +253,135 @@ class Simulator:
         else:
             self.canvas.coords(self.items["xw"], *self._absolut_coord(*p.ox.get()), *self._absolut_coord(*p.ow.get()))
 
-        if "wy" not in self.items.keys():
-            self.items["wy"] = self.canvas.create_line(
-                *self._absolut_coord(*p.ow.get()), *self._absolut_coord(*p.oy.get()),
-                fill="black", width=2
+        self.current_pentagon = p
+
+    def display(self, pentagon: Pentagon):
+        if not pentagon.is_invalid():
+            self.update(pentagon)
+
+            self.ga_angle.set(int(180 - pentagon.ga))
+            self.de_angle.set(int(pentagon.de))
+
+    def go2(self, x: int or float, y: int or float, time_per_tick: float = .1, support_line: bool = False):
+        y: int or float = -y
+        support_vector: Vector2D = Vector2D(self.current_pentagon.ox.x, -self.current_pentagon.ox.y)
+        ox = Vector2D(x, y) - support_vector
+
+        if support_line:
+            sl: int = self.canvas.create_line(
+                *self._absolut_coord(support_vector.x, -support_vector.y),
+                *self._absolut_coord(support_vector.x, -support_vector.y),
+                fill="black", width=5
             )
         else:
-            self.canvas.coords(self.items["wy"], *self._absolut_coord(*p.ow.get()), *self._absolut_coord(*p.oy.get()))
+            sl: int = 0
 
-        if "ax" not in self.items.keys():
-            self.items["ax"] = self.canvas.create_line(
-                *self._absolut_coord(*p.oa.get()),
-                *self._absolut_coord(*p.ox.get()),
-                fill="green", width=2
+        l: Line = Line(support_vector=support_vector, length_vector=ox)
+
+        for i in np.arange(0.0, ox.length(), 1.6):
+            p: Pentagon = self.position(
+                l.ox(i / ox.length())
             )
-        else:
-            self.canvas.coords(
-                self.items["ax"],
-                *self._absolut_coord(*p.oa.get()),
-                *self._absolut_coord(*p.ox.get())
-            )
+            self.display(p)
 
-        self.cached_pentagon = p
+            if support_line:
+                self.canvas.coords(
+                    sl, *self._absolut_coord(support_vector.x, -support_vector.y),
+                    *self._absolut_coord(*p.ox.get())
+                )
 
-    def go2(self, x: int or float, y: int or float):
-        xx: Vector = (self.cached_pentagon - self.position(Vector(x, y))).ox
+            time.sleep(time_per_tick)
 
-        self.canvas.create_line(
-            *self._absolut_coord(x, y), *self._absolut_coord(*self.cached_pentagon.ox.get()),
-            fill="red", width=3
-        )
+        self.display(self.position(Vector2D(x, y)))
+        # self.canvas.itemconfigure(l, state='hidden')
 
-        print(f'>> finished [{x}, {y}]')
+    def __arc(self, radius: Vector2D, support_vector: Vector2D, center_dot: bool, dots: list = (), **angles):
+        if center_dot:
+            dots.append(self.canvas.create_oval(
+                *self._absolut_coord(x=support_vector.x, y=support_vector.y, dif=-6),
+                *self._absolut_coord(x=support_vector.x, y=support_vector.y, dif=6), fill="red"
+            ))
 
-        for i in np.arange(0.0, 1.0, 0.01):
-            c: Vector = Vector(x, y) + xx * i
-            self.update(self.position(c))
-            time.sleep(.1)
+        for angle in np.arange(angles["from"], angles["to"], angles["steps"]):
+            yield Angle2D(angle=angle) * radius + support_vector
 
     def _simulation(self):
         time.sleep(1.0)
 
-        self.go2(160, 50)
+        speed: float = 0.01
+
+        elements: list = []
+
+        time.sleep(2)
+
+        self.go2(190, 0, time_per_tick=speed, support_line=False)
+        self.go2(70, 0, time_per_tick=speed, support_line=False)
+
+        for n in self.__arc(
+            radius=Vector2D(0, 120),
+            support_vector=Vector2D(30, 0),
+            center_dot=False,
+            **{"from": 0, "to": 180, "steps": 15}
+        ):
+            self.go2(n.x, n.y, time_per_tick=speed, support_line=False)
+
+        for n in self.__arc(
+            radius=Vector2D(0, -50),
+            support_vector=Vector2D(30, 0),
+            center_dot=False,
+            **{"from": 360, "to": 180, "steps": -5}
+        ):
+            self.go2(n.x, n.y, time_per_tick=speed, support_line=False)
+
+        while True:
+            for i, n in enumerate(self.__arc(
+                    radius=Vector2D(random.randint(10, 30), 0),
+                    support_vector=Vector2D(random.randint(100, 150), random.randint(-75, 75)),
+                    center_dot=True, dots=elements,
+                    **{"from": 0, "to": 360, "steps": 4}
+                )
+            ):
+                if i > 1:
+                    self.go2(n.x, n.y, time_per_tick=speed, support_line=False)
+                else:
+                    self.go2(n.x, n.y, time_per_tick=speed * .5, support_line=False)
+
+                elements.append(self.canvas.create_oval(
+                    *self._absolut_coord(x=n.x, y=n.y, dif=-1),
+                    *self._absolut_coord(x=n.x, y=n.y, dif=1),
+                    fill="white", outline="white"
+                ))
+
+            for d in elements:
+                self.canvas.delete(d)
+
+    def _sin_plot(self):
+        dots: list = []
+        speed: float = 0.001
+
+        while True:
+            for i in range(1, 5):
+                for x in np.arange(100, 190, .5):
+                    if (i % 2) == 0:
+                        y: float = self.__sin(10 * x) * (i * 8 + 10)
+                    else:
+                        x: int = 290 - x
+                        y: float = self.__sin(10 * x) * (i * 8 + 10)
+
+                    self.go2(x, y, time_per_tick=speed, support_line=False)
+
+                    dots.append(self.canvas.create_oval(
+                        *self._absolut_coord(x=x, y=y, dif=-2),
+                        *self._absolut_coord(x=x, y=y, dif=2),
+                        fill="white", outline="white"
+                    ))
+
+                for d in dots:
+                    self.canvas.delete(d)
 
     def start(self):
         if self.ui:
-            self.display_pentagon(self.angles(135.0, 135.0))
+            self.display(self.angles(135.0, 135.0))
 
             t: Thread = Thread(target=self._simulation)
             t.daemon = True
@@ -335,7 +394,6 @@ class Simulator:
 
 
 if __name__ == "__main__":
-
     """
     left_arm = Arm(
         axis_pos=(.0, 107.5/2),
@@ -373,9 +431,9 @@ if __name__ == "__main__":
     sim = Simulator(
         arms=(left_arm, right_arm),
         configuration={
-            "geometry": {"width": 800, "height": 600},
-            "origin": (200, 300),
-            "win pos": f"{-1400}+{150}", #f"{0}+{0}", #
+            "geometry": {"width": 1000, "height": 700},
+            "origin": (200, 350),
+            "win pos": f"{0}+{0}",
             "bg": "gray",
             "title": "Robotic paint simulator"
         }, ui=True

@@ -4,7 +4,7 @@ from typing import Tuple
 
 import numpy as np
 
-from modules.vectors import Vector
+from modules.vectors import Vector2D
 
 
 class Segment:
@@ -26,16 +26,16 @@ class Arm:
 
 class Pentagon:
     def __init__(
-            self, ov: Vector, ow: Vector, ox: Vector, oy: Vector, oz: Vector, oa: Vector,
+            self, ov: Vector2D, ow: Vector2D, ox: Vector2D, oy: Vector2D, oz: Vector2D, oa: Vector2D,
             al: float, be: float, be_1: float, be_2: float, ga: float, de: float,
             ep: float, ep_1: float, ep_2: float
     ):
-        self.ov: Vector = ov
-        self.ow: Vector = ow
-        self.ox: Vector = ox
-        self.oy: Vector = oy
-        self.oz: Vector = oz
-        self.oa: Vector = oa
+        self.ov: Vector2D = ov
+        self.ow: Vector2D = ow
+        self.ox: Vector2D = ox
+        self.oy: Vector2D = oy
+        self.oz: Vector2D = oz
+        self.oa: Vector2D = oa
 
         self.al: float = al
         self.be: float = be
@@ -57,8 +57,6 @@ class Pentagon:
 
         ga_steps: float = (dif.ga / max_dif) * steps
         de_steps: float = (dif.de / max_dif) * steps
-
-        print(dif.ga, dif.de)
 
         return tuple(np.arange(
             self.ga, p.ga, ga_steps if dif.ga < 0.0 else -ga_steps
@@ -91,3 +89,13 @@ class Pentagon:
 
     def __str__(self) -> str:
         return f"<Pentagon: de: {self.de:.2f}°, ga: {self.ga:.2f}°, ox: {self.ox}>"
+
+    def is_invalid(self) -> bool:
+        ga = 180 - self.ga
+        angles: tuple = (self.al, self.be, ga, self.de, self.ep)
+
+        con1: bool = self.al > 180 or self.be > 180 or self.ep > 180 or sum(angles) != 540
+        con2: bool = np.isnan(self.ox.x) or np.isnan(self.ox.y)
+        con3: bool = self.ep < self.ep_1 or self.be < self.be_1
+
+        return con1 or con2 or con3
