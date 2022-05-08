@@ -1,4 +1,4 @@
-# Der Python-Simulator
+# Der Python-Simulator - [Zum Blog Artikel](https://blog.noweck.info/der-plotter/)
 
 Den Python-Simulator des Plotters habe ich vor allem deshalb gebaut, um meine theoretischen Berechnungen praktisch nachzuweisen zu können. Dies hat mir besonders geholfen noch einige Hürden zu erkennen. Die Grafik ist dabei bewusst relativ simpel gehalten. Für die Erstellung der Oberfläche habe ich die einfache Python Library Tkinter genutzt. Für die mathematischen Berechnungen habe ich die Standard-Library numpy hinzugezogen. Zentral sind die beiden Funktionen “position” und “angles”.
 
