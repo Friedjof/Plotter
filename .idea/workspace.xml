@@ -4,15 +4,11 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="0c7bf582-6e81-4d22-bdb0-8a4202884803" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/app.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/requirements.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/plotter.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/plotter.iml" afterDir="false" />
+    <list default="true" id="0c7bf582-6e81-4d22-bdb0-8a4202884803" name="Changes" comment="update: requirements.txt, app.py">
+      <change afterPath="$PROJECT_DIR$/modules/new_simulation.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/modules/simulator.py" beforeDir="false" afterPath="$PROJECT_DIR$/modules/simulator.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/modules/slicer.py" beforeDir="false" afterPath="$PROJECT_DIR$/modules/slicer.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/requirements.txt" beforeDir="false" afterPath="$PROJECT_DIR$/requirements.txt" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -56,6 +52,7 @@
   "keyToString": {
     "ASKED_ADD_EXTERNAL_FILES": "true",
     "Python.app.executor": "Run",
+    "Python.new_simulation.executor": "Run",
     "Python.simulator.executor": "Run",
     "Python.slicer.executor": "Run",
     "RunOnceActivity.ShowReadmeOnStart": "true",
@@ -143,8 +140,17 @@
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
       <updated>1649604235636</updated>
-      <workItem from="1715858532093" duration="1718000" />
+      <workItem from="1715858532093" duration="2456000" />
     </task>
+    <task id="LOCAL-00001" summary="update: requirements.txt, app.py">
+      <option name="closed" value="true" />
+      <created>1715860346702</created>
+      <option name="number" value="00001" />
+      <option name="presentableId" value="LOCAL-00001" />
+      <option name="project" value="LOCAL" />
+      <updated>1715860346702</updated>
+    </task>
+    <option name="localTasksCounter" value="2" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -152,10 +158,13 @@
   </component>
   <component name="VcsManagerConfiguration">
     <option name="ADD_EXTERNAL_FILES_SILENTLY" value="true" />
+    <MESSAGE value="update: requirements.txt, app.py" />
+    <option name="LAST_COMMIT_MESSAGE" value="update: requirements.txt, app.py" />
   </component>
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
     <SUITE FILE_PATH="coverage/Plotter$simulator.coverage" NAME="simulator Coverage Results" MODIFIED="1715859527124" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/modules" />
     <SUITE FILE_PATH="coverage/Plotter$app.coverage" NAME="app Coverage Results" MODIFIED="1715860025081" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/Plotter$slicer.coverage" NAME="slicer Coverage Results" MODIFIED="1715859137246" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/modules" />
+    <SUITE FILE_PATH="coverage/Plotter$new_simulation.coverage" NAME="new_simulation Coverage Results" MODIFIED="1715860794478" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/modules" />
   </component>
 </project>
