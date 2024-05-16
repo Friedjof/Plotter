@@ -103,13 +103,16 @@ class Simulator:
             origin = self.origin
         return int((x - origin[0]) / factor - dif), int((y - origin[1]) * (-1) / factor - dif)
 
-    def __sin(self, deg: int or float) -> int or float:
+    @staticmethod
+    def __sin(deg: int or float) -> int or float:
         return np.sin(np.deg2rad(deg))
 
-    def __cos(self, deg: int or float) -> int or float:
+    @staticmethod
+    def __cos(deg: int or float) -> int or float:
         return np.cos(np.deg2rad(deg))
 
-    def __arccos(self, val: int or float) -> float:
+    @staticmethod
+    def __arccos(val: int or float) -> float:
         return float(np.degrees(np.arccos(val)))
 
     def __cos_angle(self, a: float, b: float, c: float) -> float:
@@ -357,7 +360,7 @@ class Simulator:
 
     def _sin_plot(self):
         dots: list = []
-        speed: float = 0.001
+        speed: float = 0.02
 
         while True:
             for i in range(1, 5):
@@ -379,11 +382,11 @@ class Simulator:
                 for d in dots:
                     self.canvas.delete(d)
 
-    def start(self):
+    def __start(self, func: callable):
         if self.ui:
             self.display(self.angles(135.0, 135.0))
 
-            t: Thread = Thread(target=self._simulation)
+            t: Thread = Thread(target=func)
             t.daemon = True
             t.start()
 
@@ -391,6 +394,15 @@ class Simulator:
                 self.win.mainloop()
             except KeyboardInterrupt:
                 exit(code=0)
+
+    def sinus(self):
+        self.__start(self._sin_plot)
+
+    def simulation(self):
+        self.__start(self._simulation)
+
+    def start(self):
+        self.__start(self._simulation)
 
 
 if __name__ == "__main__":
@@ -411,32 +423,4 @@ if __name__ == "__main__":
         )
     )
     """
-
-    left_arm = Arm(
-        axis_pos=(.0, 40/2),
-        segments=(
-            Segment(length=100.0),
-            Segment(length=100.0)
-        )
-    )
-
-    right_arm = Arm(
-        axis_pos=(.0, -40/2),
-        segments=(
-            Segment(length=100.0),
-            Segment(length=100.0)
-        )
-    )
-
-    sim = Simulator(
-        arms=(left_arm, right_arm),
-        configuration={
-            "geometry": {"width": 1000, "height": 700},
-            "origin": (200, 350),
-            "win pos": f"{0}+{0}",
-            "bg": "gray",
-            "title": "Robotic paint simulator"
-        }, ui=True
-    )
-
-    sim.start()
+    pass

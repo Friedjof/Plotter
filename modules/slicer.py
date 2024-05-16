@@ -54,6 +54,7 @@ class Slicer:
                 else:
                     img.putpixel((x, y), (255, 0, 0, 255))
 
+
 if __name__ == "__main__":
     s: Slicer = Slicer(r"C:\Users\Friedjof Noweck\Documents\repositories\robotic-painter\images\slicer\example.png")
     s.scale(500, 500)
